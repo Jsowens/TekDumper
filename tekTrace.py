@@ -9,7 +9,7 @@ rm = visa.ResourceManager()
 print("Available Scopes")
 print(rm.list_resources())
 inst = rm.open_resource(rm.list_resources()[0])
-print(inst.query("*IDN"))
+print(inst.query("*IDN?"))
 print("CONNECTED\n")
 
 FILENAME = "SINGLE_TEST"
@@ -17,7 +17,7 @@ spiceExt = ".pwl"
 genericExt = ".dat"
 Run = 1
 
-print("File Name: " + FILENAME + "\tRun #: " + str(Run) = "\n")
+print("File Name: " + FILENAME + "\tRun #: " + str(Run) + "\n")
 
 plot = 0
 count = 0
@@ -48,6 +48,8 @@ print("Files Open\nHeaders Writen")
 print("START ACQ")
 
 while count < TraceCount:
+    count += 1;
+    print("Trace Number: " + str(count))
     inst.write("CURVE?")
     data = inst.read_raw()
     headerlen = 2 + int(data[1])
@@ -57,7 +59,7 @@ while count < TraceCount:
     ADC_wave = np.array(unpack('%sB' % len(ADC_wave),ADC_wave))
     Volts = (ADC_wave - yoff) * ymult + yzero
 
-    Time = np.arrange(0, xincr * len(Volts), xincr) + toff
+    Time = np.arange(0, xincr * len(Volts), xincr) + toff
     toff = Time[len(Time)-1]
 
     for i in range(0, len(Volts)):
