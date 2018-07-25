@@ -2,6 +2,7 @@
 
 import visa
 import numpy as np
+import time
 from struct import unpack
 import pylab
 
@@ -52,20 +53,28 @@ def writeFile(spice, gfile, sp, gf, Volts, xincr, toff):
     return;
 
 def Send(inst, commandType, command, tries):
+    waittime = .1; #In Seconds
     exCount = 0
-    resp = ""
+    #errorResp = ""
+    time.sleep(waittime)
     while 1:
         try:
             if commandType == "q":
                 resp = inst.query(command)
+                #errorResp = resp
             if commandType == "w":
-                inst.query(command)
+                resp = inst.write(command)
+                #errorResp = resp
             if commandType == "r":
                 resp = inst.read()
-        except:
+                #errorResp = resp
+            break
+        except visa.VisaIOError as e:
             exCount += 1
             if exCount >= tries:
-                print("ERROR: Visa Timeout Exeption\nDetails: " + commandType + "(" + command + ")")
+                print("ERROR: VisaIOError\nDetails: " +str(e.args)+ "\n\nERRORED COMMAND: "+ commandType + "(" + command + ")")
+                print("ERROR CYCLES: " + str(exCount))
+                #print("DEVICE RESPONSE: " + str(errorResp))
                 inst.close()
                 quit()
                 
@@ -88,7 +97,7 @@ print("CONNECTED\n")
 FILENAME = "Multichannel_Test"
 spiceExt = ".pwl"
 genericExt = ".dat"
-Run = 1
+Run = 2
 
 print("File Name: " + FILENAME + "\tRUN #: " + str(Run) + "\n")
 
@@ -99,28 +108,28 @@ CH4 = 0
 
 if CH1:
     print("CHANNEL 1: ACTIVE")
-    Send(inst, "w", ":SELECT:CH1 on", 10)
+    Send(inst, "w", ":SELECT:CH1 ON", 10)
 else:
     print("CHANNEL 1: INACTIVE")
-    Send(inst, "w", ":SELECT:CH1 off", 10)
+    Send(inst, "w", ":SELECT:CH1 OFF", 10)
 if CH2:
     print("CHANNEL 2: ACTIVE")
-    Send(inst, "w", ":SELECT:CH2 on", 10)
+    Send(inst, "w", ":SELECT:CH2 ON", 10)
 else:
     print("CHANNEL 2: INACTIVE")
-    Send(inst, "w", ":SELECT:CH2 off", 10)
+    Send(inst, "w", ":SELECT:CH2 OFF", 10)
 if CH3:
     print("CHANNEL 3: ACTIVE")
-    Send(inst, "w", ":SELECT:CH3 on", 10)
+    Send(inst, "w", ":SELECT:CH3 ON", 10)
 else:
     print("CHANNEL 3: INACTIVE")
-    Send(inst, "w", ":SELECT:CH3 off", 10)
+    Send(inst, "w", ":SELECT:CH3 OFF", 10)
 if CH4:
     print("CHANNEL 4: ACTIVE")
-    Send(inst, "w", ":SELECT:CH4 on", 10)
+    Send(inst, "w", ":SELECT:CH4 ON", 10)
 else:
     print("CHANNEL 4: INACTIVE")
-    Send(inst, "w", ":SELECT:CH4 off", 10)
+    Send(inst, "w", ":SELECT:CH4 OFF", 10)
 
 
 plot = 0
@@ -172,13 +181,16 @@ if gf:
 
 print("Files Open\nHeaders Writen")
 print("START ACQ")
+Send(inst, "w", "ACQ:STATUS ON", 10)
+Send(inst, "w", "ACQ:STOPA SEQ", 10)
 while count < TraceCount:
+    count += 1
     #inst.write("ACQ:STOPA SEQ")
-    Send(inst, "w", "ACQ:STATUS RUN", 10)
-    Send(inst, "w", "ACQ:STOPA SEQ", 10)
+    Send(inst, "w", "ACQ:STATUS ON", 10)
+    print("TRACE COUNT: " +str(count))
     if CH1:
-        V1 = getCurve("CH1",yoff,ymult,yzero,inst)
         print("CALL: getCurve(CH1)")
+        V1 = getCurve("CH1",yoff,ymult,yzero,inst)        
         writeFile(spice1, gfile1, sp, gf, V1, xincr, toff)
         print("CALL: writeFile(CH1)")
     if CH2:
@@ -197,9 +209,7 @@ while count < TraceCount:
         writeFile(spice4, gfile4, sp, gf, V4, xincr, toff)
         print("CALL: writeFile(CH4)")
     #inst.write("ACQ:STATUS RUN")
-    #inst.write("ACQ:STOPA RUNST")
-    Send(inst, "w", "ACQ:STATUS RUN", 10)
-    Send(inst, "w", "ACQ:STOPA RUNST", 10)        
+    #inst.write("ACQ:STOPA RUNST")      
 
 print("STOP ACQ")
 if sp:
