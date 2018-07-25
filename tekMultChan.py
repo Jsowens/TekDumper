@@ -8,7 +8,7 @@ import pylab
 
 #FUNCTIONS
 def getCurve(channel,yoff,ymult,yzero,inst):
-    print("\tgetCurve():START")
+    #print("\tgetCurve():START")
     #inst.write(":DAT:SOU " + channel)
     #inst.write("DAT:STAR 1")
     #inst.write("DAT:STOP 10000")
@@ -26,11 +26,11 @@ def getCurve(channel,yoff,ymult,yzero,inst):
 
     ADC_wave = np.array(unpack('%sB' % len(ADC_wave),ADC_wave))
     Volts = (ADC_wave - yoff) * ymult + yzero
-    print("\tgetCurve():END\n")
+    #print("\tgetCurve():END\n")
     return Volts;
 
 def writeFile(spice, gfile, sp, gf, Volts, xincr, toff):
-    print("\twriteFile():START")
+    #print("\twriteFile():START")
     Time = np.arange(0, xincr* len(Volts), xincr) + toff
     toff = Time[len(Time)-1]
 
@@ -49,7 +49,7 @@ def writeFile(spice, gfile, sp, gf, Volts, xincr, toff):
 
     if gf:
         gfile.write("0\n")
-    print("\twriteFile():END\n")
+    #print("\twriteFile():END\n")
     return;
 
 def Send(inst, commandType, command, tries):
@@ -152,62 +152,79 @@ yzero = float(Send(inst, "q", "WFMPRE:YZERO?", 10))
 yoff = float(Send(inst, "q", "WFMPRE:YOFF?", 10))
 xincr = float(Send(inst, "q", "WFMPRE:XINCR?", 10))
 
-
-
-
-
 if sp:
     if CH1:
         spice1 = open(FILENAME + "_CH1_" + str(Run) + spiceExt, "w")
-    if CH1:
+    if CH2:
         spice2 = open(FILENAME + "_CH2_" + str(Run) + spiceExt, "w")
-    if CH1:
+    if CH3:
         spice3 = open(FILENAME + "_CH3_" + str(Run) + spiceExt, "w")
-    if CH1:
+    if CH4:
         spice4 = open(FILENAME + "_CH4_" + str(Run) + spiceExt, "w")
 if gf:
     if CH1:
         gfile1 = open(FILENAME + "_CH1_" + str(Run) + genericExt, "w")
         gfile1.write("XINCR=" + str(xincr) + "\tTRACELENGTH=" + str(int(inst.query("DAT:STOP?"))-int(inst.query("DAT:STAR?")) - 47) + "\n")
-    if CH1:
+    if CH2:
         gfile2 = open(FILENAME + "_CH2_" + str(Run) + genericExt, "w")
         gfile2.write("XINCR=" + str(xincr) + "\tTRACELENGTH=" + str(int(inst.query("DAT:STOP?"))-int(inst.query("DAT:STAR?")) - 47) + "\n")
-    if CH1:
+    if CH3:
         gfile3 = open(FILENAME + "_CH3_" + str(Run) + genericExt, "w")
         gfile3.write("XINCR=" + str(xincr) + "\tTRACELENGTH=" + str(int(inst.query("DAT:STOP?"))-int(inst.query("DAT:STAR?")) - 47) + "\n")
-    if CH1:
+    if CH4:
         gfile4 = open(FILENAME + "_CH4_" + str(Run) + genericExt, "w")
         gfile4.write("XINCR=" + str(xincr) + "\tTRACELENGTH=" + str(int(inst.query("DAT:STOP?"))-int(inst.query("DAT:STAR?")) - 47) + "\n")
 
 print("Files Open\nHeaders Writen")
 print("START ACQ")
-Send(inst, "w", "ACQ:STATUS ON", 10)
+#Send(inst, "w", "ACQ:STATUS RUN", 10)
+Send(inst, "w", "ACQ:STATE ON", 10)
 Send(inst, "w", "ACQ:STOPA SEQ", 10)
 while count < TraceCount:
     count += 1
     #inst.write("ACQ:STOPA SEQ")
-    Send(inst, "w", "ACQ:STATUS ON", 10)
-    print("TRACE COUNT: " +str(count))
+    while Send(inst, "q", "BUSY?", 10) == 1:
+            #Wait until not busy
+            print("BUSY: " + str(Send(inst, "q", "BUSY?", 10)))
+            print("BUSY... STATUS ON")
+    Send(inst, "w", "ACQ:STATE ON", 10)
+    #print("TRACE COUNT: " +str(count))
     if CH1:
-        print("CALL: getCurve(CH1)")
+        #print("CALL: getCurve(CH1)")
+        while Send(inst, "q", "BUSY?", 10) == 1:
+            #Wait until not busy
+            print("BUSY: " + str(Send(inst, "q", "BUSY?", 10)))
+            print("BUSY... CH1")
         V1 = getCurve("CH1",yoff,ymult,yzero,inst)        
         writeFile(spice1, gfile1, sp, gf, V1, xincr, toff)
-        print("CALL: writeFile(CH1)")
+        #print("CALL: writeFile(CH1)")
     if CH2:
+        while Send(inst, "q", "BUSY?", 10) == 1:
+            #Wait until not busy
+            print("BUSY: " + str(Send(inst, "q", "BUSY?", 10)))
+            print("BUSY... CH2")
         V2 = getCurve("CH2",yoff,ymult,yzero,inst)
-        print("CALL: getCurve(CH2)")
+        #print("CALL: getCurve(CH2)")
         writeFile(spice2, gfile2, sp, gf, V2, xincr, toff)
-        print("CALL: writeFile(CH2)")
+        #print("CALL: writeFile(CH2)")
     if CH3:
+        while Send(inst, "q", "BUSY?", 10) == 1:
+            #Wait until not busy
+            print("BUSY: " + str(Send(inst, "q", "BUSY?", 10)))
+            print("BUSY... CH3")
         V3 = getCurve("CH3",yoff,ymult,yzero,inst)
-        print("CALL: getCurve(CH3)")
+        #print("CALL: getCurve(CH3)")
         writeFile(spice3, gfile3, sp, gf, V3, xincr, toff)
-        print("CALL: writeFile(CH3)")
+        #print("CALL: writeFile(CH3)")
     if CH4:
+        while Send(inst, "q", "BUSY?", 10) == 1:
+            #Wait until not busy
+            print("BUSY: " + str(Send(inst, "q", "BUSY?", 10)))
+            print("BUSY... CH1")
         V4 = getCurve("CH4",yoff,ymult,yzero,inst)
-        print("CALL: getCurve(CH4)")
+        #print("CALL: getCurve(CH4)")
         writeFile(spice4, gfile4, sp, gf, V4, xincr, toff)
-        print("CALL: writeFile(CH4)")
+        #print("CALL: writeFile(CH4)")
     #inst.write("ACQ:STATUS RUN")
     #inst.write("ACQ:STOPA RUNST")      
 
