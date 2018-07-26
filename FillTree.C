@@ -1,19 +1,29 @@
+
 TTree *CreateTree(){
 
-  fstream *in=new fstream("SINGLE_TEST_1.dat",ios::in);
+  fstream *in=new fstream("NoOpAmp_Co60_EJ276_5in_Teflon_CH1PMT_CH2SiPM_CH1_3.dat",ios::in);
+  fstream *in2=new fstream("NoOpAmp_Co60_EJ276_5in_Teflon_CH1PMT_CH2SiPM_CH2_3.dat",ios::in);
 
   TTree *theTree=new TTree("T","a TTree with Traces recorded with a Textronix scope");
-  vector<Double_t> Xvalues;
-  vector<Double_t> Yvalues;
-  theTree->Branch("time",&Xvalues);
-  theTree->Branch("amplitude",&Yvalues);
+  vector<Double_t> Xvalues_1;
+  vector<Double_t> Yvalues_1;
+  vector<Double_t> Xvalues_2;
+  vector<Double_t> Yvalues_2;
+  //Ch2->Xvalues.push_back(0);
+  theTree->Branch("Ch1.time",&Xvalues_1);
+  theTree->Branch("Ch1.amplitude",&Yvalues_1);
+  theTree->Branch("Ch2.time",&Xvalues_2);
+  theTree->Branch("Ch2.amplitude",&Yvalues_2);
   Int_t npoints=0;
 
   Char_t header[256];
   Double_t xincrement;
+
   Double_t time;
-  Char_t *volts=new Char_t[23];
-  Double_t voltage;
+  Char_t *volts=new Char_t[256];
+  Char_t *volts2=new Char_t[256];
+  Double_t voltage_1;
+  Double_t voltage_2;
 
   Char_t header1[7];
   Char_t header2[14];
@@ -22,33 +32,44 @@ TTree *CreateTree(){
   Int_t nTraces=3;
   Int_t counter=0;
   in->get(header1,7);
+  in2->get(header1,7);
   *in>>xincrement;
-  //cout<<header1<<" "<<xincrement<<endl;
+  *in2>>xincrement;
+  cout<<header1<<" "<<xincrement<<endl;
   in->get(header2,14);
+  in2->get(header2,14);
   *in>>npoints;
+  *in2>>npoints;
   npoints = 9952;
-  //cout<<header2<<" "<<npoints<<endl;
+
+  cout<<header2<<" "<<npoints<<endl;
 
   while(!in->eof()){
   //while(counter<=nTraces){
 
-    Xvalues.clear();
-    Yvalues.clear();
+    Xvalues_1.clear();
+    Yvalues_1.clear();
+    Xvalues_2.clear();
+    Yvalues_2.clear();
    //in->getline(header,256);
     //cout<<header<<endl;
     //sscanf(header," %s %lf %s   %d,",header1,&xincrement,header2,&npoints);
     //cout<<header2<<" "<< npoints<<"\t"<<header2<<" "<<xincrement;
     //for(Int_t k=0;k<=npoints;k++){
     for(Int_t k=0;k<npoints;k++){
-      in->getline(volts,23,',');
-      voltage=atof(volts);
+      in->getline(volts,256,',');
+      voltage_1=atof(volts);
+      in2->getline(volts2,256,',');
+      voltage_2=atof(volts2);
       time=xincrement*k;
       //if(k%10000==0)
-      //cout<<k<<" "<<time<<" "<<voltage<<endl;
-      Xvalues.push_back(time);
-      Yvalues.push_back(voltage);
+      //cout<<k<<" "<<time<<" "<<voltage_2<<endl;
+      Xvalues_1.push_back(time);
+      Yvalues_1.push_back(voltage_1);
+      Xvalues_2.push_back(time);
+      Yvalues_2.push_back(voltage_2);      
     }
-    cout<<"# of points of the trace is: "<<Yvalues.size()<<endl;
+    //cout<<"# of points of the trace is: "<<Yvalues.size()<<endl;
     theTree->Fill();
     counter++;
     //break;
