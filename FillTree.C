@@ -1,8 +1,8 @@
 
 TTree *CreateTree(){
 
-  fstream *in=new fstream("NoOpAmp_Co60_EJ276_5in_Teflon_CH1PMT_CH2SiPM_CH1_3.dat",ios::in);
-  fstream *in2=new fstream("NoOpAmp_Co60_EJ276_5in_Teflon_CH1PMT_CH2SiPM_CH2_3.dat",ios::in);
+  fstream *in=new fstream("NoOpAmp_Cf_EJ276_5in_Teflon_CH1PMT_CH2SiPM_CH1_1.dat",ios::in);
+  fstream *in2=new fstream("NoOpAmp_Cf_EJ276_5in_Teflon_CH1PMT_CH2SiPM_CH2_1.dat",ios::in);
 
   TTree *theTree=new TTree("T","a TTree with Traces recorded with a Textronix scope");
   vector<Double_t> Xvalues_1;
@@ -80,9 +80,9 @@ cout<<counter<<" traces have been analyzed."<<endl;
 }
 
 
-void Do(){
+void Do(Char_t *filename){
 
-  TFile *fil=new TFile("test.root","recreate");
+  TFile *fil=new TFile(filename,"recreate");
   TTree *T=CreateTree();
   T->Write();
   fil->Close();

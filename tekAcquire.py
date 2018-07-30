@@ -4,6 +4,8 @@ import visa
 import numpy as np
 from struct import unpack
 import pylab
+import ROOT as root
+from ROOT import gROOT, TCanvas
 
 #FUNCTIONS
 def getCurve(channel,inst):
@@ -91,6 +93,7 @@ def Send(inst, commandType, command, tries):
             break
     return resp;
 
+def 
 
 
 #MAIN
@@ -120,8 +123,9 @@ CH4 = 0
 
 #Plot settings
 TraceCount = 10 #The number of traces to record
-sp = 1          #Output LTspice format file: 1 - yes, 0 - no
+sp = 0          #Output LTspice format file: 1 - yes, 0 - no
 gf = 1          #Output general format file: 1 - yes, 0 - no
+rf = 1          #Output ROOT format file: 1 - yes, 0 - no
 dataSize = 16   #The number of bits each data point value is sent in 
 ###################################################################################################################
 ###################################################################################################################
@@ -133,6 +137,7 @@ toff = 0                #
 count = 0               #
 spiceExt = ".pwl"       #
 genericExt = ".dat"     #
+rootExt = ".root"       #
 #########################
 
 

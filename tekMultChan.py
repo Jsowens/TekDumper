@@ -1,6 +1,8 @@
 #SETUP
 
 import visa
+import time
+from tqdm import tqdm
 import numpy as np
 from struct import unpack
 import pylab
@@ -67,10 +69,10 @@ def Send(inst, commandType, command, tries):
             if commandType == "q":
                 resp = inst.query(command)
                 
-            else if commandType == "w":
+            elif commandType == "w":
                 resp = inst.write(command)
 
-            else if commandType == "r":
+            elif commandType == "r":
                 resp = inst.read()
 
             else:
@@ -109,8 +111,8 @@ print("CONNECTED\n")
 ###################################################################################################################
 
 #File Settings
-FILENAME = "NoOpAmp_Co60_EJ276_5in_Teflon_CH1PMT_CH2SiPM"
-Run = 3
+FILENAME = "progressBarTest"
+Run = "test"
 
 #Channel settings: 1 - on, 0 - off
 CH1 = 1
